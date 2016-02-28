@@ -3,14 +3,13 @@
  */
 public class Recipe {
     String recipeName;
-    int numIngredients;
-    String cookingNotes;
+    String ingredients;
+    String prep;
 
-
-    public Recipe(String recipeName, int numIngredients, String cookingNotes) {
+    public Recipe(String recipeName, String ingredients, String prep) {
         this.recipeName = recipeName;
-        this.numIngredients = numIngredients;
-        this.cookingNotes = cookingNotes;
+        this.ingredients = ingredients;
+        this.prep = prep;
     }
 
     public String getRecipeName() {
@@ -21,19 +20,19 @@ public class Recipe {
         this.recipeName = recipeName;
     }
 
-    public int getNumIngredients() {
-        return numIngredients;
+    public String getIngredients() {
+        return ingredients;
     }
 
-    public void setNumIngredients(int numIngredients) {
-        this.numIngredients = numIngredients;
+    public void setIngredients(String ingredients) {
+        this.ingredients = ingredients;
     }
 
-    public String getCookingNotes() {
-        return cookingNotes;
+    public String getPrep() {
+        return prep;
     }
 
-    public void setCookingNotes(String cookingNotes) {
-        this.cookingNotes = cookingNotes;
+    public void setPrep(String prep) {
+        this.prep = prep;
     }
 }
