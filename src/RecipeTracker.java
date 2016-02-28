@@ -30,17 +30,16 @@ public class RecipeTracker {
                 "/login",
                 ((request, response) -> {
                     String name = request.queryParams("loginName");
-                    String pass = request.queryParams("passWord");
+                    String pass = request.queryParams("password");
 
-                    if (userMap.get(name).getPassWord().equals(pass)) {
+                    if (userMap.get(name).passWord.equals(pass)) {
                         Session session = request.session();
                         session.attribute("userName", name);
-                        response.redirect("/");
                     }
+                    response.redirect("/");
 
-                return "";
-                }),
-                new MustacheTemplateEngine()
+                    return "";
+                })
         );
         Spark.post(
                 "/createAccount",
@@ -48,14 +47,25 @@ public class RecipeTracker {
                     String newUser = request.queryParams("newUser");
                     String newPassword = request.queryParams("newPassword");
                     User user = new User(newUser, newPassword);
+                    user.setUserName(newUser);
+                    user.setPassWord(newPassword);
                     userMap.put(newUser, user);
 
                     Session session = request.session();
                     session.attribute("userName", newUser);
                     response.redirect("/");
                     return "";
-                }),
-                new MustacheTemplateEngine()
+                })
+
+        );
+        Spark.post(
+                "logout",
+                ((request, response) -> {
+                    Session session = request.session();
+                    session.invalidate();
+                    response.redirect("/");
+                    return "";
+                })
         );
 
 
