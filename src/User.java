@@ -6,7 +6,7 @@ import java.util.ArrayList;
 public class User {
     String userName;
     String passWord;
-    ArrayList<Recipe> recipeList;
+    ArrayList<Recipe> recipeList = new ArrayList<>();
 
     public User(String userName, String passWord) {
         this.userName = userName;

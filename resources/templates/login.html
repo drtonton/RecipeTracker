@@ -16,5 +16,11 @@ New to Recipe Tracker?
     <br/>
     <input type="password" placeholder="New Password" name="newPassword"/>
 </form>
+Latest contributions:<br/>
+<ol>
+    {{#recipes}}
+    <li>"{{recipeName}}" by: {{author}}</li>
+    {{/recipes}}
+</ol>
 </body>
 </html>

@@ -1,8 +1,20 @@
 <html>
 <body>
-HOME
 <form action="/logout" method="post">
     <button type="submit">Logout</button>
 </form>
+
+{{#user}}
+{{userName}} logged in
+{{/user}}
+<br/>
+Your contributions: <br/>
+<ol>
+    {{#recipes}}
+    <li>"{{recipeName}}" by: {{author}}</li>
+    {{/recipes}}
+</ol>
+
+<a href = "/add">Add Recipe</a>
 </body>
 </html>

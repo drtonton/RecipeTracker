@@ -5,6 +5,7 @@ public class Recipe {
     String recipeName;
     String ingredients;
     String prep;
+    String author;
 
     public Recipe(String recipeName, String ingredients, String prep) {
         this.recipeName = recipeName;
@@ -34,5 +35,8 @@ public class Recipe {
 
     public void setPrep(String prep) {
         this.prep = prep;
+    }
+    public void setAuthor(String author) {
+        this.author = author;
     }
 }
