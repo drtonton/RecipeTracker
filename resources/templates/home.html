@@ -1,4 +1,7 @@
 <html>
+<head>
+    <link href="home.css" rel="stylesheet" type="text/css" />
+</head>
 <body>
 <form action="/logout" method="post">
     <button type="submit">Logout</button>
@@ -11,7 +14,7 @@
 Your contributions: <br/>
 <ol>
     {{#recipes}}
-    <li>"{{recipeName}}" by: {{author}}</li>
+    <li>"{{recipeName}}" --><a href="/edit?id={{id}}">Edit</a> </li>
     {{/recipes}}
 </ol>
 

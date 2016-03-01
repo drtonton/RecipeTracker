@@ -28,4 +28,8 @@ public class User {
     public void setPassWord(String passWord) {
         this.passWord = passWord;
     }
+
+    public ArrayList<Recipe> getRecipeList() {
+        return recipeList;
+    }
 }

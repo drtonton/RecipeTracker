@@ -14,7 +14,7 @@ public class RecipeTracker {
     public static ArrayList<Recipe> recipes = new ArrayList<>();
 
     public static void main(String[] args) {
-
+//        Spark.externalStaticFileLocation("public");
         Spark.init();
         Spark.get(
                 "/",
@@ -22,11 +22,14 @@ public class RecipeTracker {
                     User user = getUserFromSession(request.session());
                     HashMap map = new HashMap();
                     map.put("user", user);
-                    map.put("recipes", recipes);
+
+
                     if (user == null) {
+                        map.put("recipes", recipes);
                         return new ModelAndView(map, "login.html");
                     }
                     else {
+                        map.put("recipes", user.getRecipeList());
                         return new ModelAndView(map, "home.html");
                     }
                 }),
@@ -37,6 +40,16 @@ public class RecipeTracker {
                 ((request, response) -> {
                     User user = getUserFromSession(request.session());
                     return new ModelAndView(user, "add.html");
+                }),
+                new MustacheTemplateEngine()
+        );
+        Spark.get(
+                "/edit",
+                ((request, response) -> {
+//                    User user = getUserFromSession(request.session());
+                    int id = Integer.valueOf(request.queryParams("id"));
+                    Recipe recipe = recipes.get(id);
+                    return new ModelAndView(recipe, "edit.html");
                 }),
                 new MustacheTemplateEngine()
         );
@@ -51,7 +64,6 @@ public class RecipeTracker {
                         session.attribute("userName", name);
                     }
                     response.redirect("/");
-
                     return "";
                 })
         );
@@ -87,7 +99,8 @@ public class RecipeTracker {
                     String recipeName = request.queryParams("recipeName");
                     String ingredients = request.queryParams("ingredients");
                     String prep = request.queryParams("prep");
-                    Recipe recipe = new Recipe (recipeName, ingredients, prep);
+                    int prepTime = Integer.valueOf(request.queryParams("prepTime"));
+                    Recipe recipe = new Recipe (recipes.size(), recipeName, ingredients, prep, prepTime);
                     recipe.setAuthor(user.getUserName());
                     user.recipeList.add(recipe);
                     recipes.add(recipe);
@@ -95,6 +108,24 @@ public class RecipeTracker {
                     return "";
                 })
         );
+        Spark.post(
+                "/edit",
+                ((request, response) -> {
+                    String recipeName = request.queryParams("recipeName");
+                    String ingredients = request.queryParams("ingredients");
+                    String prep = request.queryParams("prep");
+                    int prepTime = Integer.valueOf(request.queryParams("prepTime"));
+                    int id = Integer.valueOf(request.queryParams("id"));
+                    Recipe recipe = recipes.get(id);
+                    recipe.setRecipeName(recipeName);
+                    recipe.setIngredients(ingredients);
+                    recipe.setPrep(prep);
+                    recipe.setPrepTime(prepTime);
+                    response.redirect("/");
+                    return "";
+                })
+        );
+
     }
     static User getUserFromSession(Session session) {
         String name = session.attribute("userName");

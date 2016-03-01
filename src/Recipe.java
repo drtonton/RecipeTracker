@@ -2,15 +2,22 @@
  * Created by noellemachin on 2/27/16.
  */
 public class Recipe {
+    int id;
     String recipeName;
     String ingredients;
     String prep;
+    int prepTime;
     String author;
 
-    public Recipe(String recipeName, String ingredients, String prep) {
+    public Recipe(int id, String recipeName, String ingredients, String prep, int prepTime) {
+        this.id = id;
         this.recipeName = recipeName;
         this.ingredients = ingredients;
         this.prep = prep;
+        this.prepTime = prepTime;
+    }
+
+    public Recipe() {
     }
 
     public String getRecipeName() {
@@ -38,5 +45,13 @@ public class Recipe {
     }
     public void setAuthor(String author) {
         this.author = author;
+    }
+
+    public int getPrepTime() {
+        return prepTime;
+    }
+
+    public void setPrepTime(int prepTime) {
+        this.prepTime = prepTime;
     }
 }
