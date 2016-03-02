@@ -15,7 +15,7 @@ import java.util.HashMap;
 
 public class RecipeTracker {
     public static HashMap<String, User> userMap = new HashMap<>();
-    public static ArrayList<Recipe> recipes = new ArrayList<>();
+//    public static ArrayList<Recipe> recipes = new ArrayList<>();
 
 
     public static void createTables(Connection conn) throws SQLException {
@@ -70,6 +70,26 @@ public class RecipeTracker {
         }
         return null;
     }
+    // only included conn in the args and excluded the WHERE condition in preparestatement. might need to edit later**
+    public static ArrayList selectRecipes (Connection conn) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM recipes INNER JOIN users ON recipe_user_id = user_id");
+        ArrayList<Recipe> allRecipes = new ArrayList<>();
+        ResultSet results = stmt.executeQuery();
+        while (results.next()) {
+            int recipeId = results.getInt("recipe_id");
+            String recipeName = results.getString("recipe_name");
+            String ingredients = results.getString("ingredients");
+            String prep = results.getString("prep");
+            int prepTime = results.getInt("prep_time");
+            int recipeUserId = results.getInt("recipe_user_id");
+            Recipe recipe = new Recipe(recipeId, recipeUserId, recipeName, ingredients, prep, prepTime);
+            allRecipes.add(recipe);
+        }
+        return allRecipes;
+    }
+    public static void updateRecipe (Connection conn, int recipeId) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("UPDATE recipes SET recipe_name = ?, ingredients = ?, prep = ?, prep_time = ? WHERE recipe_id = ?");
+        stmt.setInt(5, recipeId);
 
 
     }
