@@ -1,16 +1,20 @@
+package com.theironyard;
+
 import java.util.ArrayList;
 
 /**
  * Created by noellemachin on 2/27/16.
  */
 public class User {
+    int id;
     String userName;
-    String passWord;
+    String password;
     ArrayList<Recipe> recipeList = new ArrayList<>();
 
-    public User(String userName, String passWord) {
+    public User(int id, String userName, String password) {
+        this.id = id;
         this.userName = userName;
-        this.passWord = passWord;
+        this.password = password;
     }
 
     public String getUserName() {
@@ -22,11 +26,11 @@ public class User {
     }
 
     public String getPassWord() {
-        return passWord;
+        return password;
     }
 
     public void setPassWord(String passWord) {
-        this.passWord = passWord;
+        this.password = passWord;
     }
 
     public ArrayList<Recipe> getRecipeList() {

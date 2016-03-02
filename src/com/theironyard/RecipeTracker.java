@@ -1,7 +1,11 @@
+package com.theironyard;
+
 import spark.ModelAndView;
 import spark.Session;
 import spark.Spark;
 import spark.template.mustache.MustacheTemplateEngine;
+
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -13,8 +17,68 @@ public class RecipeTracker {
     public static HashMap<String, User> userMap = new HashMap<>();
     public static ArrayList<Recipe> recipes = new ArrayList<>();
 
-    public static void main(String[] args) {
+
+    public static void createTables(Connection conn) throws SQLException {
+        Statement stmt = conn.createStatement();
+        stmt.execute("CREATE TABLE IF NOT EXISTS users (user_id IDENTITY, user_name VARCHAR, password VARCHAR)");
+        stmt.execute("CREATE TABLE IF NOT EXISTS recipes (recipe_id IDENTITY, recipe_name VARCHAR, ingredients VARCHAR, " +
+                "prep VARCHAR, prep_time INT, recipe_user_id INT)");
+}
+//    Create an insertUser method, which creates a new record in the users table.
+    public static void insertUser(Connection conn, String userName, String password) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("INSERT INTO users VALUES (NULL, ?, ?)");
+        stmt.setString(1, userName);
+        stmt.setString(2, password);
+        stmt.execute();
+}
+    public static void insertRecipe(Connection conn, String recipeName, String ingredients, String prep, int prepTime, int userId) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("INSERT INTO recipes VALUES (NULL, ?, ?, ?, ?, ?");
+        stmt.setString(1, recipeName);
+        stmt.setString(2, ingredients);
+        stmt.setString(3, prep);
+        stmt.setInt(4, prepTime);
+        stmt.setInt(5, userId);
+        stmt.execute();
+    }
+
+//Create a selectUser method, which returns a com.theironyard.User object for the given username.
+    public static User selectUser(Connection conn, String userName) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM users WHERE user_name = ?");
+        stmt.setString(1, userName);
+        ResultSet results = stmt.executeQuery();
+        if (results.next()) {
+            int id = results.getInt("user_id");
+            String password = results.getString("password");
+            return new User(id, userName, password);
+        }
+        return null;
+    }
+    public static Recipe selectRecipe(Connection conn, int id) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM recipes INNER JOIN users ON recipe_user_id = user_id WHERE recipe_id = ?");
+        stmt.setInt(1, id);
+        ResultSet results = stmt.executeQuery();
+        if (results.next()) {
+            int recipeId = results.getInt("recipe_id");
+            String recipeName = results.getString("recipe_name");
+            String ingredients = results.getString("ingredients");
+            String prep = results.getString("prep");
+            int prepTime = results.getInt("prep_time");
+            int recipeUserId = results.getInt("recipe_user_id");
+
+            Recipe recipe = new Recipe (recipeId, recipeUserId, recipeName, ingredients, prep, prepTime);
+            return recipe;
+        }
+        return null;
+    }
+
+
+    }
+
+
+    public static void main(String[] args) throws SQLException {
 //        Spark.externalStaticFileLocation("public");
+        Connection conn = DriverManager.getConnection("jdbc:h2:./main");
+        createTables(conn);
         Spark.init();
         Spark.get(
                 "/",
@@ -46,7 +110,6 @@ public class RecipeTracker {
         Spark.get(
                 "/edit",
                 ((request, response) -> {
-//                    User user = getUserFromSession(request.session());
                     int id = Integer.valueOf(request.queryParams("id"));
                     Recipe recipe = recipes.get(id);
                     return new ModelAndView(recipe, "edit.html");
@@ -59,7 +122,7 @@ public class RecipeTracker {
                     String name = request.queryParams("loginName");
                     String pass = request.queryParams("password");
 
-                    if (userMap.get(name).passWord.equals(pass)) {
+                    if (userMap.get(name).password.equals(pass)) {
                         Session session = request.session();
                         session.attribute("userName", name);
                     }
@@ -72,9 +135,8 @@ public class RecipeTracker {
                 ((request, response) -> {
                     String newUser = request.queryParams("newUser");
                     String newPassword = request.queryParams("newPassword");
-                    User user = new User(newUser, newPassword);
-                    user.setUserName(newUser);
-                    user.setPassWord(newPassword);
+                    int id = Integer.valueOf(request.queryParams("id"));
+                    User user = new User(userMap.size(), newUser, newPassword);
                     userMap.put(newUser, user);
 
                     Session session = request.session();

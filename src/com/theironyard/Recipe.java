@@ -1,16 +1,20 @@
+package com.theironyard;
+
 /**
  * Created by noellemachin on 2/27/16.
  */
 public class Recipe {
-    int id;
+    int recipeId;
+    int recipeUserId;
     String recipeName;
     String ingredients;
     String prep;
     int prepTime;
     String author;
 
-    public Recipe(int id, String recipeName, String ingredients, String prep, int prepTime) {
-        this.id = id;
+    public Recipe(int recipeId, int recipeUserId, String recipeName, String ingredients, String prep, int prepTime) {
+        this.recipeId = recipeId;
+        this.recipeUserId = recipeUserId;
         this.recipeName = recipeName;
         this.ingredients = ingredients;
         this.prep = prep;
