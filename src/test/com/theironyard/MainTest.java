@@ -39,7 +39,7 @@ public class MainTest {
     public void testEntries() throws SQLException {
         Connection conn = startConnection();
         RecipeTracker.insertRecipe(conn, "food", "ings", "cook", "time", 94);
-        Recipe recipe = RecipeTracker.selectRecipe(conn, 94);
+        Recipe recipe = RecipeTracker.selectRecipe(conn, 1);
         endConnection(conn);
         assertTrue(recipe != null);
     }

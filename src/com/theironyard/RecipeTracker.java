@@ -51,21 +51,21 @@ public class RecipeTracker {
         return null;
     }
     public static Recipe selectRecipe(Connection conn, int recipeId) throws SQLException {
-        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM recipes INNER JOIN users ON recipe_user_id = user_id WHERE recipe_id = ?");
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM recipes WHERE recipe_id = ?");
         stmt.setInt(1, recipeId);
         ResultSet results = stmt.executeQuery();
-        if (results.next()) {
+        results.next();
 //            int recipeId = results.getInt("recipe_id");
-            String recipeName = results.getString("recipe_name");
-            String ingredients = results.getString("ingredients");
-            String prep = results.getString("prep");
-            String prepTime = results.getString("prep_time");
-            int recipeUserId = results.getInt("recipe_user_id");
+        String recipeName = results.getString("recipe_name");
+        String ingredients = results.getString("ingredients");
+        String prep = results.getString("prep");
+        String prepTime = results.getString("prep_time");
+        int recipeUserId = results.getInt("recipe_user_id");
 
-            Recipe recipe = new Recipe (recipeId, recipeUserId, recipeName, ingredients, prep, prepTime);
-            return recipe;
-        }
-        return null;
+        Recipe recipe = new Recipe (recipeId, recipeUserId, recipeName, ingredients, prep, prepTime);
+        return recipe;
+
+
     }
     // only included conn in the args and excluded the WHERE condition in preparestatement. might need to edit later**
     public static ArrayList selectRecipes (Connection conn) throws SQLException {
