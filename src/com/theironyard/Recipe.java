@@ -9,10 +9,10 @@ public class Recipe {
     String recipeName;
     String ingredients;
     String prep;
-    int prepTime;
+    String prepTime;
     String author;
 
-    public Recipe(int recipeId, int recipeUserId, String recipeName, String ingredients, String prep, int prepTime) {
+    public Recipe(int recipeId, int recipeUserId, String recipeName, String ingredients, String prep, String prepTime) {
         this.recipeId = recipeId;
         this.recipeUserId = recipeUserId;
         this.recipeName = recipeName;
@@ -51,11 +51,11 @@ public class Recipe {
         this.author = author;
     }
 
-    public int getPrepTime() {
+    public String getPrepTime() {
         return prepTime;
     }
 
-    public void setPrepTime(int prepTime) {
+    public void setPrepTime(String prepTime) {
         this.prepTime = prepTime;
     }
 }

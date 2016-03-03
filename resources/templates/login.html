@@ -1,6 +1,6 @@
 <html>
 <body>
-Welcome to com.theironyard.Recipe Tracker
+Welcome to Recipe Tracker
 <br/>
 Login:
 <form action="/login" method="post">
@@ -9,7 +9,7 @@ Login:
     <br/>
     <input type="password" placeholder="Password" name="password"/>
 </form>
-New to com.theironyard.Recipe Tracker?
+New to Recipe Tracker?
 <form action="/createAccount" method="post">
     <input type="text" placeholder="New Username" name="newUser"/>
     <button type="submit">Create Account</button>
@@ -19,7 +19,7 @@ New to com.theironyard.Recipe Tracker?
 Latest contributions:<br/>
 <ol>
     {{#recipes}}
-    <li>"{{recipeName}}" by: {{author}}</li>
+    <li>"{{recipeName}}"</li>
     {{/recipes}}
 </ol>
 </body>

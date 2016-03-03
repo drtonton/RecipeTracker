@@ -14,15 +14,12 @@ import java.util.HashMap;
  */
 
 public class RecipeTracker {
-    public static HashMap<String, User> userMap = new HashMap<>();
-//    public static ArrayList<Recipe> recipes = new ArrayList<>();
-
 
     public static void createTables(Connection conn) throws SQLException {
         Statement stmt = conn.createStatement();
         stmt.execute("CREATE TABLE IF NOT EXISTS users (user_id IDENTITY, user_name VARCHAR, password VARCHAR)");
         stmt.execute("CREATE TABLE IF NOT EXISTS recipes (recipe_id IDENTITY, recipe_name VARCHAR, ingredients VARCHAR, " +
-                "prep VARCHAR, prep_time INT, recipe_user_id INT)");
+                "prep VARCHAR, prep_time VARCHAR, recipe_user_id INT)");
 }
 //    Create an insertUser method, which creates a new record in the users table.
     public static void insertUser(Connection conn, String userName, String password) throws SQLException {
@@ -31,13 +28,13 @@ public class RecipeTracker {
         stmt.setString(2, password);
         stmt.execute();
 }
-    public static void insertRecipe(Connection conn, String recipeName, String ingredients, String prep, int prepTime, int userId) throws SQLException {
-        PreparedStatement stmt = conn.prepareStatement("INSERT INTO recipes VALUES (NULL, ?, ?, ?, ?, ?");
+    public static void insertRecipe(Connection conn, String recipeName, String ingredients, String prep, String prepTime, int recipeUserId) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("INSERT INTO recipes VALUES (NULL, ?, ?, ?, ?, ?)");
         stmt.setString(1, recipeName);
         stmt.setString(2, ingredients);
         stmt.setString(3, prep);
-        stmt.setInt(4, prepTime);
-        stmt.setInt(5, userId);
+        stmt.setString(4, prepTime);
+        stmt.setInt(5, recipeUserId);
         stmt.execute();
     }
 
@@ -53,16 +50,16 @@ public class RecipeTracker {
         }
         return null;
     }
-    public static Recipe selectRecipe(Connection conn, int id) throws SQLException {
+    public static Recipe selectRecipe(Connection conn, int recipeId) throws SQLException {
         PreparedStatement stmt = conn.prepareStatement("SELECT * FROM recipes INNER JOIN users ON recipe_user_id = user_id WHERE recipe_id = ?");
-        stmt.setInt(1, id);
+        stmt.setInt(1, recipeId);
         ResultSet results = stmt.executeQuery();
         if (results.next()) {
-            int recipeId = results.getInt("recipe_id");
+//            int recipeId = results.getInt("recipe_id");
             String recipeName = results.getString("recipe_name");
             String ingredients = results.getString("ingredients");
             String prep = results.getString("prep");
-            int prepTime = results.getInt("prep_time");
+            String prepTime = results.getString("prep_time");
             int recipeUserId = results.getInt("recipe_user_id");
 
             Recipe recipe = new Recipe (recipeId, recipeUserId, recipeName, ingredients, prep, prepTime);
@@ -75,45 +72,68 @@ public class RecipeTracker {
         PreparedStatement stmt = conn.prepareStatement("SELECT * FROM recipes INNER JOIN users ON recipe_user_id = user_id");
         ArrayList<Recipe> allRecipes = new ArrayList<>();
         ResultSet results = stmt.executeQuery();
+
         while (results.next()) {
             int recipeId = results.getInt("recipe_id");
             String recipeName = results.getString("recipe_name");
             String ingredients = results.getString("ingredients");
             String prep = results.getString("prep");
-            int prepTime = results.getInt("prep_time");
+            String prepTime = results.getString("prep_time");
             int recipeUserId = results.getInt("recipe_user_id");
             Recipe recipe = new Recipe(recipeId, recipeUserId, recipeName, ingredients, prep, prepTime);
             allRecipes.add(recipe);
         }
         return allRecipes;
     }
-    public static void updateRecipe (Connection conn, int recipeId) throws SQLException {
+    public static ArrayList selectRecipesForUser (Connection conn, int userId) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("SELECT * FROM recipes INNER JOIN users ON recipe_user_id = user_id WHERE user_id = ?");
+        stmt.setInt(1, userId);
+        ArrayList<Recipe> allRecipes = new ArrayList<>();
+        ResultSet results = stmt.executeQuery();
+        while (results.next()) {
+            int recipeId = results.getInt("recipe_id");
+            String recipeName = results.getString("recipe_name");
+            String ingredients = results.getString("ingredients");
+            String prep = results.getString("prep");
+            String prepTime = results.getString("prep_time");
+            int recipeUserId = results.getInt("recipe_user_id");
+            Recipe recipe = new Recipe(recipeId, recipeUserId, recipeName, ingredients, prep, prepTime);
+            allRecipes.add(recipe);
+        }
+        return allRecipes;
+    }
+    public static void updateRecipe (Connection conn, int recipeId, String recipeName, String ingredients, String prep, String prepTime) throws SQLException {
         PreparedStatement stmt = conn.prepareStatement("UPDATE recipes SET recipe_name = ?, ingredients = ?, prep = ?, prep_time = ? WHERE recipe_id = ?");
         stmt.setInt(5, recipeId);
-
-
+        stmt.setString(1, recipeName);
+        stmt.setString(2, ingredients);
+        stmt.setString(3, prep);
+        stmt.setString(4, prepTime);
+        stmt.execute();
     }
-
-
+    public static void deleteRecipe (Connection conn, int recipeId) throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("DELETE FROM recipes WHERE recipe_id = ?");
+        stmt.setInt(1, recipeId);
+        stmt.execute();
+    }
     public static void main(String[] args) throws SQLException {
-//        Spark.externalStaticFileLocation("public");
         Connection conn = DriverManager.getConnection("jdbc:h2:./main");
         createTables(conn);
         Spark.init();
         Spark.get(
                 "/",
                 ((request, response) -> {
-                    User user = getUserFromSession(request.session());
+                    User user = getUserFromSession(request.session(), conn);
                     HashMap map = new HashMap();
+
                     map.put("user", user);
 
-
                     if (user == null) {
-                        map.put("recipes", recipes);
+                        map.put("recipes", selectRecipes(conn));
                         return new ModelAndView(map, "login.html");
                     }
                     else {
-                        map.put("recipes", user.getRecipeList());
+                        map.put("recipes", selectRecipesForUser(conn, user.id));
                         return new ModelAndView(map, "home.html");
                     }
                 }),
@@ -122,7 +142,7 @@ public class RecipeTracker {
         Spark.get(
                 "/add",
                 ((request, response) -> {
-                    User user = getUserFromSession(request.session());
+                    User user = getUserFromSession(request.session(), conn);
                     return new ModelAndView(user, "add.html");
                 }),
                 new MustacheTemplateEngine()
@@ -130,8 +150,8 @@ public class RecipeTracker {
         Spark.get(
                 "/edit",
                 ((request, response) -> {
-                    int id = Integer.valueOf(request.queryParams("id"));
-                    Recipe recipe = recipes.get(id);
+                    int id = Integer.valueOf(request.queryParams("recipeId"));
+                    Recipe recipe = selectRecipe(conn, id);
                     return new ModelAndView(recipe, "edit.html");
                 }),
                 new MustacheTemplateEngine()
@@ -141,12 +161,18 @@ public class RecipeTracker {
                 ((request, response) -> {
                     String name = request.queryParams("loginName");
                     String pass = request.queryParams("password");
-
-                    if (userMap.get(name).password.equals(pass)) {
+                    User user = selectUser(conn, name);
+                    if (user == null) {
+                        response.redirect("/");
+                    }
+                    else if (user.password.equalsIgnoreCase(pass)) {
                         Session session = request.session();
                         session.attribute("userName", name);
+                        response.redirect("/");
                     }
-                    response.redirect("/");
+                    else {
+                        response.redirect("/");
+                    }
                     return "";
                 })
         );
@@ -155,9 +181,7 @@ public class RecipeTracker {
                 ((request, response) -> {
                     String newUser = request.queryParams("newUser");
                     String newPassword = request.queryParams("newPassword");
-                    int id = Integer.valueOf(request.queryParams("id"));
-                    User user = new User(userMap.size(), newUser, newPassword);
-                    userMap.put(newUser, user);
+                    insertUser(conn, newUser, newPassword);
 
                     Session session = request.session();
                     session.attribute("userName", newUser);
@@ -177,15 +201,13 @@ public class RecipeTracker {
         Spark.post(
                 "/addRecipe",
                 ((request, response) -> {
-                    User user = getUserFromSession(request.session());
+                    User user = getUserFromSession(request.session(), conn);
                     String recipeName = request.queryParams("recipeName");
                     String ingredients = request.queryParams("ingredients");
                     String prep = request.queryParams("prep");
-                    int prepTime = Integer.valueOf(request.queryParams("prepTime"));
-                    Recipe recipe = new Recipe (recipes.size(), recipeName, ingredients, prep, prepTime);
-                    recipe.setAuthor(user.getUserName());
-                    user.recipeList.add(recipe);
-                    recipes.add(recipe);
+                    String prepTime = request.queryParams("prepTime");
+
+                    insertRecipe(conn, recipeName, ingredients, prep, prepTime, user.id);
                     response.redirect("/");
                     return "";
                 })
@@ -196,21 +218,25 @@ public class RecipeTracker {
                     String recipeName = request.queryParams("recipeName");
                     String ingredients = request.queryParams("ingredients");
                     String prep = request.queryParams("prep");
-                    int prepTime = Integer.valueOf(request.queryParams("prepTime"));
-                    int id = Integer.valueOf(request.queryParams("id"));
-                    Recipe recipe = recipes.get(id);
-                    recipe.setRecipeName(recipeName);
-                    recipe.setIngredients(ingredients);
-                    recipe.setPrep(prep);
-                    recipe.setPrepTime(prepTime);
+                    String prepTime = request.queryParams("prepTime");
+                    int id = Integer.valueOf(request.queryParams("recipeId"));
+                    updateRecipe(conn, id, recipeName, ingredients, prep, prepTime);
                     response.redirect("/");
                     return "";
                 })
         );
-
+        Spark.post(
+                "/delete",
+                ((request, response) -> {
+                    int recipeId = Integer.valueOf(request.queryParams("recipeId"));
+                    deleteRecipe(conn, recipeId);
+                    response.redirect("/");
+                    return "";
+                })
+        );
     }
-    static User getUserFromSession(Session session) {
+    static User getUserFromSession(Session session, Connection conn) throws SQLException {
         String name = session.attribute("userName");
-        return userMap.get(name);
+        return selectUser(conn, name);
     }
 }

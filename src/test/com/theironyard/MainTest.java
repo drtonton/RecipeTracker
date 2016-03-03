@@ -35,4 +35,12 @@ public class MainTest {
         endConnection(conn);
         assertTrue(user != null);
     }
+    @Test
+    public void testEntries() throws SQLException {
+        Connection conn = startConnection();
+        RecipeTracker.insertRecipe(conn, "food", "ings", "cook", "time", 94);
+        Recipe recipe = RecipeTracker.selectRecipe(conn, 94);
+        endConnection(conn);
+        assertTrue(recipe != null);
+    }
 }

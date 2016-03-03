@@ -7,6 +7,7 @@
     <button type="submit">Logout</button>
 </form>
 
+
 {{#user}}
 {{userName}} logged in
 {{/user}}
@@ -14,10 +15,15 @@
 Your contributions: <br/>
 <ol>
     {{#recipes}}
-    <li>"{{recipeName}}" --><a href="/edit?id={{id}}">Edit</a> </li>
+    <li>"{{recipeName}}" --><a href="/edit?recipeId={{recipeId}}">Edit</a>
+        <form action="/delete" method="post">
+            <input type="hidden" value="{{recipeId}}" name="recipeId"/>
+            <button type="submit">Delete Recipe</button>
+        </form>
+    </li>
     {{/recipes}}
 </ol>
 
-<a href = "/add">Add com.theironyard.Recipe</a>
+<a href = "/add">Add Recipe</a>
 </body>
 </html>
