@@ -36,11 +36,38 @@ public class MainTest {
         assertTrue(user != null);
     }
     @Test
-    public void testEntries() throws SQLException {
+    public void testSingleRecipe() throws SQLException {
         Connection conn = startConnection();
         RecipeTracker.insertRecipe(conn, "food", "ings", "cook", "time", 94);
         Recipe recipe = RecipeTracker.selectRecipe(conn, 1);
         endConnection(conn);
         assertTrue(recipe != null);
+    }
+    @Test
+    public void testRecipeTable() throws SQLException {
+        Connection conn = startConnection();
+        RecipeTracker.insertRecipe(conn, "test", "test", "test","test", 100);
+        RecipeTracker.insertRecipe(conn, "test2", "test2", "test2", "test2", 101);
+        ArrayList recipes = RecipeTracker.selectRecipes(conn);
+        endConnection(conn);
+        assertTrue(recipes != null);
+    }
+    @Test
+    public void testUpdateRecipe() throws SQLException {
+        Connection conn = startConnection();
+        RecipeTracker.insertRecipe(conn, "test", "test", "test", "test", 1);
+        Recipe original = RecipeTracker.selectRecipe(conn, 1);
+        RecipeTracker.updateRecipe(conn, 1, "I CHANGED THIS", "test", "test", "test");
+        Recipe updated = RecipeTracker.selectRecipe(conn, 1);
+        endConnection(conn);
+        assertTrue(original != updated);
+    }
+    @Test
+    public void testDeleteRecipe() throws SQLException {
+        Connection conn = startConnection();
+        RecipeTracker.insertRecipe(conn, "test", "test", "test", "test", 1);
+        RecipeTracker.deleteRecipe(conn, 1);
+        Recipe recipe = RecipeTracker.selectRecipe(conn, 1);
+        assertTrue(recipe == null);
     }
 }
